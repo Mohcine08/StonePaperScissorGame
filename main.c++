@@ -2,192 +2,221 @@
 #include <time.h>
 #include <limits>
 using namespace std;
-enum enStonePaperScissor{ Stone =1 , Paper = 2 , scissor = 3};
-enum enWinner {ComputerWon =1 , NoWinner =2 , PlayerWon = 3};
+enum enGameChoice{ Stone =1 , Paper = 2 , Scissor = 3};
+enum enWinner {Computer =1 , NoWinner =2 , Player = 3};
 struct stRoundInfo 
 {
-    
-    enStonePaperScissor PlayerChoice ;
-    enStonePaperScissor ComputerChioce ;
+    enGameChoice PlayerChoice ;
+    enGameChoice ComputerChioce ;
     enWinner RoundWinner;
-
 };
-struct stGameinfo
+struct stGameResults
 {
-    stRoundInfo RoundInfo;
-    short NumberOfRounds=0;
-    short NumberOfPlayerWons =0;
-    short NumberOfDraws = 0;
-    short NumberOfComputerWon=0;
+    short GameRoumds=0;
+    short PlayerWonTimes =0;
+    short DrawTimes = 0;
+    short ComputerWonTimes=0;
     enWinner FinalWinner;
 };
 int ReadRandomNumbers(short from, short to)
 {
     return rand() % (to - from +1) + from;
 }
-string PrintWinner(enWinner Winner)
+string WinnerName(enWinner Winner)
 {
     string W[3] ={"Computer","No Winner" , "Player"};
     return W[Winner - 1];
 }
-string PrintStonePaperScissor(enStonePaperScissor choice)
+string ChoiceName(enGameChoice choice)
 {
-    string ensomble[3] = {"Stone","Paper","scissor"};
+    string ensomble[3] = {"Stone","Paper","Scissor"};
     return ensomble[choice -1];
 }
-enStonePaperScissor GetStonePaperScissor()
+enGameChoice GetComputerChoice()
 {
-    return (enStonePaperScissor)ReadRandomNumbers(1,3);
+    return (enGameChoice)ReadRandomNumbers(1,3);
 }
 void SetScreenColor(enWinner Result)
 {
     switch (Result)
     {
-    case  enWinner::PlayerWon:
+    case  enWinner::Player:
         system("color 2F");
         break;
-    case enWinner::ComputerWon:
+    case enWinner::Computer:
         system("color 4F");
+        cout << "\a";
         break;
     case enWinner::NoWinner:
         system("color 6F");
         break;
     }
 }
-enWinner LogicGame(stRoundInfo RoundInfo)
+enWinner WhoWonTheRound(stRoundInfo RoundInfo)
 {
     if(RoundInfo.PlayerChoice == RoundInfo.ComputerChioce)
     {
        return enWinner::NoWinner;
     }
-    else if(RoundInfo.PlayerChoice == enStonePaperScissor::Paper)
+
+    switch (RoundInfo.PlayerChoice)
     {
-        if(RoundInfo.ComputerChioce == enStonePaperScissor::Stone)
+    case enGameChoice::Paper :
+        if(RoundInfo.ComputerChioce == enGameChoice::Stone)
         {
-           return enWinner::PlayerWon;
+           return enWinner::Player;
         }
-    }
-    else if(RoundInfo.PlayerChoice == enStonePaperScissor::scissor)
-    {
-        if(RoundInfo.ComputerChioce == enStonePaperScissor::Paper)
+        break;
+    case enGameChoice::Scissor :
+        if(RoundInfo.ComputerChioce == enGameChoice::Paper)
         {
-            return enWinner::PlayerWon;
+            return enWinner::Player;
         }
-    }
-    else if(RoundInfo.PlayerChoice == enStonePaperScissor::Stone)
-    {
-        if(RoundInfo.ComputerChioce == enStonePaperScissor::scissor)
+        break;
+    case enGameChoice::Stone :
+        if(RoundInfo.ComputerChioce == enGameChoice::Scissor)
         {
-            return enWinner::PlayerWon;
+            return enWinner::Player;
         }
+        break;
     }
-    
-    return enWinner::ComputerWon;
+
+    return enWinner::Computer;
 }
-enStonePaperScissor ReadPlayerChoice()
+enGameChoice ReadPlayerChoice(string message)
 {
     int playerChoice;
-    cin >> playerChoice;
-    return (enStonePaperScissor)playerChoice;
+    do
+    {
+        cout << message << "  ";
+        cin >> playerChoice;
+        while(cin.fail())
+        {
+            cin.clear();
+            cin.ignore(std::numeric_limits<std::streamsize>::max() , '\n');
+            cout << message;
+            cin >> playerChoice;
+        }
+    } while (playerChoice < 1 || playerChoice > 3);
+    
+    return (enGameChoice)playerChoice;
 }
-void PrintRoundResult(stGameinfo GameInfo, short NumberOfRound)
+void ShowRoundResults(stRoundInfo RoundInfo, short NumberOfRound)
 {
     printf("\n_____________Round[%d]_____________\n",NumberOfRound);
-    cout << "Player Choice : " << PrintStonePaperScissor(GameInfo.RoundInfo.PlayerChoice) << "\n";
-    cout << "Computer Chioce : " << PrintStonePaperScissor(GameInfo.RoundInfo.ComputerChioce) << "\n";
-    cout << "Round winner : [" << PrintWinner(GameInfo.RoundInfo.RoundWinner) << endl << endl;
+    cout << "Player Choice : " << ChoiceName(RoundInfo.PlayerChoice) << "\n";
+    cout << "Computer Chioce : " << ChoiceName(RoundInfo.ComputerChioce) << "\n";
+    cout << "Round winner : [" << WinnerName(RoundInfo.RoundWinner) <<']';
+    cout << "\n__________________________________\n";
+    cout << endl;
 }
-int ReadHowManyRounds()
+short ReadHowManyRounds()
 {
-    int NumberOfRounds=0;
+    short GameRoumds=0;
     do
     {
         cout << "please enter how many rounds do you want to play from 1 to 10 ?  ";
-        cin >> NumberOfRounds;
+        cin >> GameRoumds;
          while(cin.fail())
         {
             cin.clear();
             cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            cout << "invalid number,please enter how many rounds do you want to play from 1 to 10 ?  ";
-            cin >> NumberOfRounds;
+            cout << "please enter how many rounds do you want to play from 1 to 10 ?  ";
+            cin >> GameRoumds;
         }
-    }while(NumberOfRounds <= 1 || NumberOfRounds >= 10);
+    }while(GameRoumds < 1 || GameRoumds > 10);
 
-    return NumberOfRounds;
+    return GameRoumds;
 }
-void GenerateRound(stGameinfo &GameInfo, short NumberOfRound)
+string Tabs(short NumberOfTabs)
 {
-    
-    printf("\nRound [%d] begins :\n",NumberOfRound);
-    cout << "\nYour choice: [1]Stone , [2]Paper , [3]scissor ? ";
-    GameInfo.RoundInfo.PlayerChoice = ReadPlayerChoice();
-    GameInfo.RoundInfo.ComputerChioce = GetStonePaperScissor();
-    GameInfo.RoundInfo.RoundWinner = LogicGame(GameInfo.RoundInfo);
-    PrintRoundResult(GameInfo,NumberOfRound);
-    SetScreenColor(GameInfo.RoundInfo.RoundWinner);
-    switch(GameInfo.RoundInfo.RoundWinner)
+    string t = "";
+    for(short x = 0; x < NumberOfTabs; x++)
+    {
+        t += "\t";
+    }
+    return t;
+}
+void GenerateRound(stGameResults &GameResults, short NumberOfRound)
+{
+    stRoundInfo RoundInfo;
+
+    printf("\nRound [%d] begins :\n\n",NumberOfRound);
+    RoundInfo.PlayerChoice = ReadPlayerChoice("Your choice: [1]Stone , [2]Paper , [3]Scissor ?");
+    RoundInfo.ComputerChioce = GetComputerChoice();
+    RoundInfo.RoundWinner = WhoWonTheRound(RoundInfo);
+    ShowRoundResults(RoundInfo,NumberOfRound);
+    SetScreenColor(RoundInfo.RoundWinner);
+    switch(RoundInfo.RoundWinner)
         {
-            case enWinner::PlayerWon :
-            GameInfo.NumberOfPlayerWons++;
+            case enWinner::Player :
+            GameResults.PlayerWonTimes++;
             break;
-            case enWinner::ComputerWon :
-            GameInfo.NumberOfComputerWon++;
+            case enWinner::Computer :
+            GameResults.ComputerWonTimes++;
             break;
             default:
-            GameInfo.NumberOfDraws++;
+            GameResults.DrawTimes++;
         }
 }
-void GenerateRounds(stGameinfo &GameInfo)
+enWinner WhoWonTheGame(stGameResults GameResults)
 {
-    for(short NumberOfRound = 1; NumberOfRound <= GameInfo.NumberOfRounds; NumberOfRound++ )
+    if(GameResults.PlayerWonTimes > GameResults.ComputerWonTimes)
     {
-        GenerateRound(GameInfo,NumberOfRound);
+        return enWinner::Player;
     }
-
-    if(GameInfo.NumberOfPlayerWons >= GameInfo.NumberOfComputerWon)
+    else if(GameResults.ComputerWonTimes > GameResults.PlayerWonTimes)
     {
-        GameInfo.FinalWinner = enWinner::PlayerWon;
-    }
-    else if(GameInfo.NumberOfComputerWon >= GameInfo.NumberOfPlayerWons)
-    {
-        GameInfo.FinalWinner = enWinner::ComputerWon;
+        return enWinner::Computer;
     }
     else
     {
-        GameInfo.FinalWinner = enWinner::NoWinner;
+        return enWinner::NoWinner;
     }
 }
-void RestScreen()
+void GenerateRounds(stGameResults &GameResults)
+{
+    for(short NumberOfRound = 1; NumberOfRound <= GameResults.GameRoumds; NumberOfRound++ )
+    {
+        GenerateRound(GameResults,NumberOfRound);
+    }
+
+    GameResults.FinalWinner =  WhoWonTheGame(GameResults);
+
+}
+void ResetScreen()
 {
     system("cls");
     system("color 0F");
 }
-void PrintFinalResult(stGameinfo GameInfo)
+void ShowFinalGameResults(stGameResults GameResults)
 {
-    cout << "\n_______________________________________\n";
-    cout << "\t\t +++ Game Over +++\n";
-    cout << "_______________________________________\n";
-    cout << "_____________[Game Result]_____________\n";
-    cout << "Game Rounds         :" << GameInfo.NumberOfRounds << '\n';
-    cout << "Player won times    :" << GameInfo.NumberOfPlayerWons << '\n';
-    cout << "Computer Won times  :" << GameInfo.NumberOfComputerWon << '\n';
-    cout << "Draw times          :" << GameInfo.NumberOfDraws << '\n';
-    cout << "Final Winner        :" << PrintWinner(GameInfo.FinalWinner);
+    cout << "\n";
+    cout << Tabs(2) << "_______________________________________\n";
+    cout << Tabs(3) << "+++ Game Over +++\n";
+    cout << Tabs(2) << "_______________________________________\n";
+    cout << Tabs(2) << "_____________[Game Result]_____________\n";
+    cout << Tabs(2) << "Game Rounds         :" << GameResults.GameRoumds << '\n';
+    cout << Tabs(2) << "Player won times    :" << GameResults.PlayerWonTimes << '\n';
+    cout << Tabs(2) << "Computer Won times  :" << GameResults.ComputerWonTimes << '\n';
+    cout << Tabs(2) << "Draw times          :" << GameResults.DrawTimes << '\n';
+    cout << Tabs(2) << "Final Winner        :" << WinnerName(GameResults.FinalWinner) << '\n';
+    cout << Tabs(2) << "_______________________________________\n";
     cout << endl;
 }
 void PlayGame()
 {
-    stGameinfo GameInfo;
-    GameInfo.NumberOfRounds = ReadHowManyRounds();
-    GenerateRounds(GameInfo);
-    PrintFinalResult(GameInfo);
+    stGameResults GameResults;
+    GameResults.GameRoumds = ReadHowManyRounds();
+    GenerateRounds(GameResults);
+    ShowFinalGameResults(GameResults);
 }
 void StartGame()
 {
     char PlayMore = 'y';
     while (PlayMore == 'Y' || PlayMore == 'y')
     {
-        RestScreen();
+        ResetScreen();
         PlayGame();
 
         cout << "do you want to play again? Y/N ";
